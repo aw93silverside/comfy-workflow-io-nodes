@@ -1,0 +1,10 @@
+[project]
+name = "swordfish-comfy-nodes"
+version = "0.1.0"
+description = "ComfyUI custom nodes that declare a workflow's Swordfish API contract in the graph"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.comfy]
+PublisherId = "silverside-ai"
+DisplayName = "Swordfish API Nodes"

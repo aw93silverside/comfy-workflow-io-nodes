@@ -1,0 +1,78 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": { "ckpt_name": "sd_xl_base_1.0.safetensors" },
+    "_meta": { "title": "Load Checkpoint" }
+  },
+  "2": {
+    "class_type": "SwordfishTextInput",
+    "inputs": {
+      "param_name": "prompt",
+      "value": "a photograph of a cat",
+      "required": true,
+      "description": "The main text prompt describing the image to generate.",
+      "example": "a golden retriever puppy in a field of flowers",
+      "advanced": false,
+      "group": "Prompt",
+      "order": 0
+    },
+    "_meta": { "title": "Prompt" }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "text": ["2", 0], "clip": ["1", 1] },
+    "_meta": { "title": "CLIP Text Encode (Positive)" }
+  },
+  "4": {
+    "class_type": "SwordfishSeedInput",
+    "inputs": {
+      "param_name": "seed",
+      "value": 42,
+      "randomize_if_omitted": true,
+      "required": false,
+      "description": "Random seed. Omit to get a fresh result each run.",
+      "example": "",
+      "advanced": true,
+      "group": "Sampling",
+      "order": 10
+    },
+    "_meta": { "title": "Seed" }
+  },
+  "5": {
+    "class_type": "EmptyLatentImage",
+    "inputs": { "width": 1024, "height": 1024, "batch_size": 1 },
+    "_meta": { "title": "Empty Latent Image" }
+  },
+  "6": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": ["4", 0],
+      "steps": 20,
+      "cfg": 7.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": ["1", 0],
+      "positive": ["3", 0],
+      "negative": ["3", 0],
+      "latent_image": ["5", 0]
+    },
+    "_meta": { "title": "KSampler" }
+  },
+  "7": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["6", 0], "vae": ["1", 2] },
+    "_meta": { "title": "VAE Decode" }
+  },
+  "8": {
+    "class_type": "SwordfishImageOutput",
+    "inputs": {
+      "images": ["7", 0],
+      "output_name": "result",
+      "filename_template": "generated",
+      "format": "png",
+      "include": true
+    },
+    "_meta": { "title": "Result" }
+  }
+}

@@ -1,0 +1,2 @@
+# No third-party dependencies — the nodes rely on ComfyUI's existing runtime
+# (torch, numpy, Pillow), all imported lazily inside node run() methods.

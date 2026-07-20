@@ -14,7 +14,6 @@ they can sit mid-graph without dead-ending a branch.
 
 import os
 import re
-import shutil
 
 from .common import CATEGORY_OUTPUT
 
@@ -107,63 +106,71 @@ class SwordfishImageOutput:
         return {"ui": {"images": results}, "result": (images,)}
 
 
+_VIDEO_CODECS = {"mp4": "libx264", "webm": "libvpx-vp9"}
+
+
 class SwordfishVideoOutput:
-    """Return an already-produced video file to the caller with a controlled name.
+    """Encode an IMAGE frame batch into a video and return it with a controlled
+    filename. Takes the frames + frame_rate, encodes via imageio-ffmpeg into the
+    output directory (like VHS_VideoCombine), and registers it so Swordfish
+    returns it. Passes the frames through so it can sit mid-graph.
 
-    Takes ``video_path`` — the path/filename of a video produced upstream (e.g.
-    the file written by VHS_VideoCombine) — copies it into the output directory
-    under the resolved name, and registers it so Swordfish returns it.
-
-    MVP note: this is a marker/rename node; it does not encode frames itself.
+    NOTE: audio muxing is not supported yet (video track only). Odd frame
+    dimensions are padded to even by the encoder for codec compatibility.
     """
 
     CATEGORY = CATEGORY_OUTPUT
     FUNCTION = "run"
     OUTPUT_NODE = True
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("video_path",)
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("frames",)
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "video_path": ("STRING", {
-                    "default": "",
-                    "tooltip": "Path or filename of the produced video (e.g. from VHS_VideoCombine).",
-                }),
+                "frames": ("IMAGE",),
                 "output_name": ("STRING", {"default": "video"}),
                 "filename_template": ("STRING", {"default": "", "tooltip": "Static filename (no extension)."}),
+                "format": (["mp4", "webm"], {"default": "mp4"}),
+                "frame_rate": ("FLOAT", {"default": 24.0, "min": 1.0, "max": 240.0, "step": 1.0}),
+                "quality": ("INT", {"default": 8, "min": 1, "max": 10,
+                                    "tooltip": "Encoder quality (higher = better/larger)."}),
                 "include": ("BOOLEAN", {"default": True}),
             },
             "optional": {
                 "filename": ("STRING", {"forceInput": True, "tooltip": "Dynamic filename (no extension). Takes priority."}),
+                "fps": ("FLOAT", {"forceInput": True, "tooltip": "Optional wired fps; overrides frame_rate widget."}),
             },
         }
 
-    def run(self, video_path, output_name, filename_template, include, filename=""):
-        if not include or not video_path:
-            return {"ui": {"videos": []}, "result": (video_path,)}
+    def run(self, frames, output_name, filename_template, format, frame_rate, quality, include, filename="", fps=None):
+        if not include:
+            return {"ui": {"videos": []}, "result": (frames,)}
 
+        import numpy as np
+        import imageio.v2 as imageio
         import folder_paths
 
         out_dir = folder_paths.get_output_directory()
-        src = video_path
-        if not os.path.isabs(src) or not os.path.exists(src):
-            candidate = os.path.join(out_dir, os.path.basename(video_path))
-            if os.path.exists(candidate):
-                src = candidate
-        if not os.path.exists(src):
-            raise FileNotFoundError(
-                f"SwordfishVideoOutput '{output_name}': video '{video_path}' not found."
-            )
-
-        ext = os.path.splitext(src)[1].lstrip(".").lower() or "mp4"
+        ext = format.lower()
+        codec = _VIDEO_CODECS.get(ext, "libx264")
+        rate = float(fps) if fps else float(frame_rate)
         basename = _resolve_basename(filename, filename_template, output_name)
         fname, fpath = _unique_path(out_dir, basename, ext)
-        if os.path.abspath(src) != os.path.abspath(fpath):
-            shutil.copyfile(src, fpath)
+
+        writer = imageio.get_writer(
+            fpath, fps=rate, codec=codec, quality=quality, macro_block_size=2,
+        )
+        try:
+            batch = frames.shape[0] if hasattr(frames, "shape") else len(frames)
+            for i in range(batch):
+                arr = 255.0 * frames[i].cpu().numpy()
+                writer.append_data(np.clip(arr, 0, 255).astype(np.uint8))
+        finally:
+            writer.close()
 
         return {
             "ui": {"videos": [{"filename": fname, "subfolder": "", "type": "output"}]},
-            "result": (fname,),
+            "result": (frames,),
         }

@@ -29,7 +29,7 @@ reads them to auto-build the entire `api_config`.
 | Swordfish Enum Input | STRING | `options` (one per line) → API enum allowlist |
 | Swordfish Seed Input | INT | `randomize_if_omitted` |
 | Swordfish Image Input | IMAGE, MASK | LoadImage-style; reads the file Swordfish writes to the input dir |
-| Swordfish Video Input | STRING (filename) | MVP: provides filename; wire into your video loader |
+| Swordfish Video Input | IMAGE, FLOAT (frames, fps) | decodes via imageio-ffmpeg; `frame_load_cap` guard (audio not extracted yet) |
 
 Every input node shares this metadata block: `param_name` (the API key),
 `required`, `description`, `example`, `advanced`, `group`, `order`.
@@ -38,14 +38,14 @@ Every input node shares this metadata block: `param_name` (the API key),
 | Node | Takes | Notes |
 |------|-------|-------|
 | Swordfish Image Output | IMAGE | full saver (png/jpg/webp); passthrough IMAGE |
-| Swordfish Video Output | STRING path | MVP: rename/register an already-produced video file |
+| Swordfish Video Output | IMAGE frames | encodes via imageio-ffmpeg (mp4/webm); passthrough IMAGE (audio muxing not yet) |
 
 Output nodes are `OUTPUT_NODE` and pass their media through, so they can sit
 mid-graph without dead-ending a branch.
 
-> **MVP scope note:** Image input/output are fully implemented. Video nodes are
-> pragmatic markers (filename in, rename on the way out). Text/Audio/File output
-> nodes and true in-node video encoding are planned fast-follows.
+> **MVP scope note:** Image and video input/output are fully implemented (video
+> uses imageio-ffmpeg, already present in the Swordfish images; frames + fps, no
+> audio muxing yet). Text/Audio/File output nodes are planned fast-follows.
 
 ## Exported-JSON → api_config contract
 

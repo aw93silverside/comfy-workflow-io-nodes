@@ -30,16 +30,18 @@ def _resolve_basename(filename: str, filename_template: str, output_name: str) -
     return safe
 
 
-def _unique_path(directory: str, basename: str, ext: str) -> tuple[str, str]:
-    """Return (filename, fullpath) that does not collide in ``directory``."""
+def _output_path(directory: str, basename: str, ext: str) -> tuple[str, str]:
+    """Return (filename, fullpath) for an output.
+
+    The client-facing filename must be STABLE across runs, so we deliberately do
+    NOT dedup against the (persistent) workspace output directory — doing so made
+    a requested ``result.png`` drift to ``result_2.png`` on every repeat call.
+    The runner assigns each returned file a unique R2 key regardless, so
+    overwriting a stale local file of the same name is harmless. Multiple images
+    from a single node are disambiguated by the caller via the batch index.
+    """
     filename = f"{basename}.{ext}"
-    path = os.path.join(directory, filename)
-    counter = 1
-    while os.path.exists(path):
-        filename = f"{basename}_{counter}.{ext}"
-        path = os.path.join(directory, filename)
-        counter += 1
-    return filename, path
+    return filename, os.path.join(directory, filename)
 
 
 class SwordfishImageOutput:
@@ -94,7 +96,7 @@ class SwordfishImageOutput:
             arr = 255.0 * images[i].cpu().numpy()
             img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
             stem = basename if batch == 1 else f"{basename}_{i + 1}"
-            fname, fpath = _unique_path(out_dir, stem, ext)
+            fname, fpath = _output_path(out_dir, stem, ext)
             if ext in ("jpg", "jpeg"):
                 img.convert("RGB").save(fpath, quality=95)
             elif ext == "webp":
@@ -157,7 +159,7 @@ class SwordfishVideoOutput:
         codec = _VIDEO_CODECS.get(ext, "libx264")
         rate = float(fps) if fps else float(frame_rate)
         basename = _resolve_basename(filename, filename_template, output_name)
-        fname, fpath = _unique_path(out_dir, basename, ext)
+        fname, fpath = _output_path(out_dir, basename, ext)
 
         writer = imageio.get_writer(
             fpath, fps=rate, codec=codec, quality=quality, macro_block_size=2,

@@ -11,6 +11,24 @@ deliberately trivial: they pass ``value`` straight through. Swordfish overrides
 CATEGORY_INPUT = "Swordfish/Inputs"
 CATEGORY_OUTPUT = "Swordfish/Outputs"
 
+
+class _AnyType(str):
+    """A type string that compares equal to every other type.
+
+    ComfyUI validates links by comparing the source RETURN_TYPE against the
+    target input type. COMBO inputs (e.g. KSampler.sampler_name / scheduler,
+    CheckpointLoaderSimple.ckpt_name) have their option-list as their type, so a
+    plain ``STRING`` output cannot connect to them. An output typed with this
+    wildcard connects into any input, including combos. Standard ComfyUI idiom.
+    """
+
+    def __ne__(self, other):  # noqa: D105 - "not-equal" is always False
+        return False
+
+
+# Wildcard output type for nodes that feed COMBO/typed widgets (e.g. enums).
+ANY_TYPE = _AnyType("*")
+
 # Bumped when the widget contract changes so the parser can branch on it.
 SWORDFISH_NODE_SCHEMA = "1"
 

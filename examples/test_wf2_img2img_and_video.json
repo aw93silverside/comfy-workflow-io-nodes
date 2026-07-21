@@ -1,0 +1,108 @@
+{
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": { "ckpt_name": "v1-5-pruned-emaonly-fp16.safetensors" },
+    "_meta": { "title": "Load Checkpoint (SD1.5)" }
+  },
+
+  "1": {
+    "class_type": "SwordfishImageInput",
+    "inputs": {
+      "param_name": "input_image",
+      "value": "",
+      "accepted_formats": "png,jpg,jpeg,webp",
+      "max_size_mb": 20,
+      "required": true,
+      "description": "Source image for img2img.",
+      "example": "", "advanced": false, "group": "Image", "order": 0
+    },
+    "_meta": { "title": "Input Image" }
+  },
+  "2": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": ["1", 0],
+      "upscale_method": "lanczos",
+      "width": 512,
+      "height": 512,
+      "crop": "center"
+    },
+    "_meta": { "title": "Resize to 512 (VAE-safe)" }
+  },
+  "3": {
+    "class_type": "VAEEncode",
+    "inputs": { "pixels": ["2", 0], "vae": ["4", 2] },
+    "_meta": { "title": "VAE Encode" }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "text": "enhance detail, sharp, high quality", "clip": ["4", 1] },
+    "_meta": { "title": "Positive" }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "text": "blurry, low quality", "clip": ["4", 1] },
+    "_meta": { "title": "Negative" }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 12345,
+      "steps": 15,
+      "cfg": 7.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.6,
+      "model": ["4", 0],
+      "positive": ["5", 0],
+      "negative": ["6", 0],
+      "latent_image": ["3", 0]
+    },
+    "_meta": { "title": "KSampler (img2img)" }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["7", 0], "vae": ["4", 2] },
+    "_meta": { "title": "VAE Decode" }
+  },
+  "9": {
+    "class_type": "SwordfishImageOutput",
+    "inputs": {
+      "images": ["8", 0],
+      "output_name": "img2img_result",
+      "filename_template": "img2img",
+      "format": "png",
+      "include": true
+    },
+    "_meta": { "title": "Image Output" }
+  },
+
+  "10": {
+    "class_type": "SwordfishVideoInput",
+    "inputs": {
+      "param_name": "input_video",
+      "value": "",
+      "frame_load_cap": 24,
+      "accepted_formats": "mp4,mov,webm",
+      "max_size_mb": 100,
+      "required": true,
+      "description": "Source video; decoded to frames and re-encoded.",
+      "example": "", "advanced": false, "group": "Video", "order": 1
+    },
+    "_meta": { "title": "Input Video" }
+  },
+  "11": {
+    "class_type": "SwordfishVideoOutput",
+    "inputs": {
+      "frames": ["10", 0],
+      "output_name": "video_result",
+      "filename_template": "roundtrip",
+      "format": "mp4",
+      "frame_rate": 24.0,
+      "quality": 8,
+      "include": true,
+      "fps": ["10", 1]
+    },
+    "_meta": { "title": "Video Output" }
+  }
+}

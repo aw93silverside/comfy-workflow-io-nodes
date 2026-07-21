@@ -1,0 +1,33 @@
+{
+  "1": {
+    "class_type": "EmptyImage",
+    "inputs": { "width": 512, "height": 512, "batch_size": 1, "color": 4210752 },
+    "_meta": { "title": "Blank Image (no model needed)" }
+  },
+  "2": {
+    "class_type": "SwordfishTextInput",
+    "inputs": {
+      "param_name": "image_name",
+      "value": "swordfish_test",
+      "required": true,
+      "description": "Text supplied by the caller; becomes the returned image's filename.",
+      "example": "my_first_image",
+      "advanced": false,
+      "group": "",
+      "order": 0
+    },
+    "_meta": { "title": "Text Input" }
+  },
+  "3": {
+    "class_type": "SwordfishImageOutput",
+    "inputs": {
+      "images": ["1", 0],
+      "output_name": "result",
+      "filename_template": "fallback_name",
+      "format": "png",
+      "include": true,
+      "filename": ["2", 0]
+    },
+    "_meta": { "title": "Image Output" }
+  }
+}

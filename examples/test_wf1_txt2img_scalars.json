@@ -1,0 +1,191 @@
+{
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": { "ckpt_name": "v1-5-pruned-emaonly-fp16.safetensors" },
+    "_meta": { "title": "Load Checkpoint (SD1.5)" }
+  },
+  "6": {
+    "class_type": "SwordfishTextInput",
+    "inputs": {
+      "param_name": "prompt",
+      "value": "a scenic mountain landscape at golden hour, highly detailed",
+      "required": true,
+      "description": "Positive text prompt.",
+      "example": "a red sports car on a coastal road",
+      "advanced": false, "group": "Prompt", "order": 0
+    },
+    "_meta": { "title": "Prompt" }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "text": ["6", 0], "clip": ["4", 1] },
+    "_meta": { "title": "Positive" }
+  },
+  "8": {
+    "class_type": "SwordfishTextInput",
+    "inputs": {
+      "param_name": "negative_prompt",
+      "value": "blurry, low quality, watermark",
+      "required": false,
+      "description": "Negative text prompt.",
+      "example": "text, extra fingers",
+      "advanced": true, "group": "Prompt", "order": 1
+    },
+    "_meta": { "title": "Negative Prompt" }
+  },
+  "9": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "text": ["8", 0], "clip": ["4", 1] },
+    "_meta": { "title": "Negative" }
+  },
+  "10": {
+    "class_type": "SwordfishIntInput",
+    "inputs": {
+      "param_name": "width", "value": 512, "min": 256, "max": 1024, "step": 64,
+      "required": false, "description": "Image width.", "example": "512",
+      "advanced": false, "group": "Dimensions", "order": 2
+    },
+    "_meta": { "title": "Width" }
+  },
+  "11": {
+    "class_type": "SwordfishIntInput",
+    "inputs": {
+      "param_name": "height", "value": 512, "min": 256, "max": 1024, "step": 64,
+      "required": false, "description": "Image height.", "example": "512",
+      "advanced": false, "group": "Dimensions", "order": 3
+    },
+    "_meta": { "title": "Height" }
+  },
+  "5": {
+    "class_type": "EmptyLatentImage",
+    "inputs": { "width": ["10", 0], "height": ["11", 0], "batch_size": 1 },
+    "_meta": { "title": "Empty Latent" }
+  },
+  "12": {
+    "class_type": "SwordfishIntInput",
+    "inputs": {
+      "param_name": "steps", "value": 20, "min": 1, "max": 60, "step": 1,
+      "required": false, "description": "Total sampling steps.", "example": "20",
+      "advanced": false, "group": "Sampling", "order": 4
+    },
+    "_meta": { "title": "Steps" }
+  },
+  "13": {
+    "class_type": "SwordfishFloatInput",
+    "inputs": {
+      "param_name": "cfg", "value": 7.0, "min": 1.0, "max": 20.0, "step": 0.1,
+      "required": false, "description": "Classifier-free guidance scale.", "example": "7.0",
+      "advanced": false, "group": "Sampling", "order": 5
+    },
+    "_meta": { "title": "CFG" }
+  },
+  "14": {
+    "class_type": "SwordfishEnumInput",
+    "inputs": {
+      "param_name": "sampler_name", "value": "euler",
+      "options": "euler\ndpmpp_2m\ndpmpp_sde\nddim\nheun",
+      "required": false, "description": "Sampler algorithm.", "example": "dpmpp_2m",
+      "advanced": true, "group": "Sampling", "order": 6
+    },
+    "_meta": { "title": "Sampler" }
+  },
+  "15": {
+    "class_type": "SwordfishEnumInput",
+    "inputs": {
+      "param_name": "scheduler", "value": "normal",
+      "options": "normal\nkarras\nexponential\nsgm_uniform",
+      "required": false, "description": "Noise scheduler.", "example": "karras",
+      "advanced": true, "group": "Sampling", "order": 7
+    },
+    "_meta": { "title": "Scheduler" }
+  },
+  "16": {
+    "class_type": "SwordfishSeedInput",
+    "inputs": {
+      "param_name": "seed", "value": 42, "randomize_if_omitted": true,
+      "required": false, "description": "Random seed. Omit for a fresh result each run.",
+      "example": "", "advanced": false, "group": "Sampling", "order": 8
+    },
+    "_meta": { "title": "Seed" }
+  },
+  "17": {
+    "class_type": "SwordfishBoolInput",
+    "inputs": {
+      "param_name": "return_preview", "value": true,
+      "required": false,
+      "description": "If true, also return the mid-sampling preview image.",
+      "example": "true", "advanced": false, "group": "Output", "order": 9
+    },
+    "_meta": { "title": "Return Preview?" }
+  },
+  "20": {
+    "class_type": "KSamplerAdvanced",
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": ["16", 0],
+      "steps": ["12", 0],
+      "cfg": ["13", 0],
+      "sampler_name": ["14", 0],
+      "scheduler": ["15", 0],
+      "positive": ["7", 0],
+      "negative": ["9", 0],
+      "latent_image": ["5", 0],
+      "start_at_step": 0,
+      "end_at_step": 12,
+      "return_with_leftover_noise": "enable",
+      "model": ["4", 0]
+    },
+    "_meta": { "title": "Sample (stage 1 / preview)" }
+  },
+  "21": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["20", 0], "vae": ["4", 2] },
+    "_meta": { "title": "Decode Preview" }
+  },
+  "22": {
+    "class_type": "SwordfishImageOutput",
+    "inputs": {
+      "images": ["21", 0],
+      "output_name": "preview",
+      "filename_template": "preview",
+      "format": "png",
+      "include": ["17", 0]
+    },
+    "_meta": { "title": "Preview Output (bool-gated)" }
+  },
+  "23": {
+    "class_type": "KSamplerAdvanced",
+    "inputs": {
+      "add_noise": "disable",
+      "noise_seed": ["16", 0],
+      "steps": ["12", 0],
+      "cfg": ["13", 0],
+      "sampler_name": ["14", 0],
+      "scheduler": ["15", 0],
+      "positive": ["7", 0],
+      "negative": ["9", 0],
+      "latent_image": ["20", 0],
+      "start_at_step": 12,
+      "end_at_step": 10000,
+      "return_with_leftover_noise": "disable",
+      "model": ["4", 0]
+    },
+    "_meta": { "title": "Sample (stage 2 / final)" }
+  },
+  "24": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["23", 0], "vae": ["4", 2] },
+    "_meta": { "title": "Decode Final" }
+  },
+  "25": {
+    "class_type": "SwordfishImageOutput",
+    "inputs": {
+      "images": ["24", 0],
+      "output_name": "result",
+      "filename_template": "result",
+      "format": "png",
+      "include": true
+    },
+    "_meta": { "title": "Final Output (always)" }
+  }
+}

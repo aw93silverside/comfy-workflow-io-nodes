@@ -12,7 +12,7 @@ including mid-workflow to expose an intermediate value as an API knob.
 
 import os
 
-from .common import CATEGORY_INPUT, meta_widgets
+from .common import ANY_TYPE, CATEGORY_INPUT, meta_widgets
 
 
 class _SwordfishInputBase:
@@ -130,7 +130,9 @@ class SwordfishEnumInput(_SwordfishInputBase):
             }
         }
 
-    RETURN_TYPES = ("STRING",)
+    # Wildcard so the choice can drive COMBO inputs (sampler_name, scheduler,
+    # ckpt_name, lora_name, ...) as well as plain STRING inputs.
+    RETURN_TYPES = (ANY_TYPE,)
     RETURN_NAMES = ("value",)
 
     def run(self, param_name, value, options="", **_meta):

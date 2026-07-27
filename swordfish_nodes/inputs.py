@@ -220,12 +220,15 @@ class SwordfishImageInput(_SwordfishInputBase):
 
 
 class SwordfishVideoInput(_SwordfishInputBase):
-    """Video parameter with a real decoder. Swordfish writes the caller's
-    uploaded video to the input directory and sets ``value`` to the filename;
-    this node decodes it (via imageio-ffmpeg) into an IMAGE frame batch + fps,
-    like VHS_LoadVideo — so it drops into existing frame-based graphs.
+    """Video parameter. Behaves like ComfyUI's core LoadVideo node: Swordfish
+    writes the caller's uploaded video to the input directory and sets
+    ``value`` to the filename; this node just resolves that path and hands
+    back a VIDEO handle (``comfy_api`` ``VideoInput``), so it drops into any
+    graph that consumes VIDEO (GetVideoComponents, VideoSlice, SaveVideo, ...).
 
-    NOTE: audio is not extracted yet (frames + fps only).
+    Decoding is deferred to whatever node consumes the VIDEO downstream —
+    unlike eagerly decoding to frames here, this preserves audio and avoids
+    paying the decode cost when it isn't needed.
     """
 
     @classmethod
@@ -234,10 +237,6 @@ class SwordfishVideoInput(_SwordfishInputBase):
             "required": {
                 "param_name": meta_widgets()["param_name"],
                 "value": ("STRING", {"default": "", "tooltip": "Filename in the input dir (set by Swordfish per call)."}),
-                "frame_load_cap": ("INT", {
-                    "default": 0, "min": 0, "max": 100000,
-                    "tooltip": "Max frames to load (0 = all). Guards against huge videos.",
-                }),
                 "accepted_formats": ("STRING", {
                     "default": "mp4,mov,webm",
                     "tooltip": "Comma-separated accepted upload formats (documentation + validation hint).",
@@ -248,36 +247,20 @@ class SwordfishVideoInput(_SwordfishInputBase):
             }
         }
 
-    RETURN_TYPES = ("IMAGE", "FLOAT")
-    RETURN_NAMES = ("frames", "fps")
+    RETURN_TYPES = ("VIDEO",)
+    RETURN_NAMES = ("video",)
 
-    def run(self, param_name, value, frame_load_cap=0, accepted_formats="", max_size_mb=100, **_meta):
-        import numpy as np
-        import torch
-        import imageio.v2 as imageio
+    def run(self, param_name, value, accepted_formats="", max_size_mb=100, **_meta):
         import folder_paths
+        from comfy_api.input_impl import VideoFromFile
 
-        path = os.path.join(folder_paths.get_input_directory(), value) if value else ""
+        path = folder_paths.get_annotated_filepath(value) if value else ""
         if not path or not os.path.exists(path):
+            # Fall back to the input dir directly (Swordfish writes there).
+            path = os.path.join(folder_paths.get_input_directory(), value)
+        if not os.path.exists(path):
             raise FileNotFoundError(
                 f"SwordfishVideoInput '{param_name}': video '{value}' not found in the input directory."
             )
 
-        reader = imageio.get_reader(path, "ffmpeg")
-        try:
-            meta = reader.get_meta_data()
-            fps = float(meta.get("fps", 24.0)) or 24.0
-            frames = []
-            for i, frame in enumerate(reader):
-                if frame_load_cap and i >= frame_load_cap:
-                    break
-                frames.append(np.asarray(frame))
-        finally:
-            reader.close()
-
-        if not frames:
-            raise ValueError(f"SwordfishVideoInput '{param_name}': decoded zero frames from '{value}'.")
-
-        arr = np.stack(frames).astype(np.float32) / 255.0  # [N,H,W,3]
-        images = torch.from_numpy(arr)
-        return (images, fps)
+        return (VideoFromFile(path),)

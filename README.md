@@ -29,7 +29,7 @@ reads them to auto-build the entire `api_config`.
 | Swordfish Enum Input | STRING | `options` (one per line) → API enum allowlist |
 | Swordfish Seed Input | INT | `randomize_if_omitted` |
 | Swordfish Image Input | IMAGE, MASK | LoadImage-style; reads the file Swordfish writes to the input dir |
-| Swordfish Video Input | IMAGE, FLOAT (frames, fps) | decodes via imageio-ffmpeg; `frame_load_cap` guard (audio not extracted yet) |
+| Swordfish Video Input | VIDEO | LoadVideo-style; reads the file Swordfish writes to the input dir, decoding deferred to whatever consumes the VIDEO |
 
 Every input node shares this metadata block: `param_name` (the API key),
 `required`, `description`, `example`, `advanced`, `group`, `order`.
@@ -43,9 +43,10 @@ Every input node shares this metadata block: `param_name` (the API key),
 Output nodes are `OUTPUT_NODE` and pass their media through, so they can sit
 mid-graph without dead-ending a branch.
 
-> **MVP scope note:** Image and video input/output are fully implemented (video
-> uses imageio-ffmpeg, already present in the Swordfish images; frames + fps, no
-> audio muxing yet). Text/Audio/File output nodes are planned fast-follows.
+> **MVP scope note:** Image and video input/output are fully implemented.
+> Video input returns a native VIDEO handle (LoadVideo-style, audio preserved);
+> video output still takes IMAGE frames and encodes via imageio-ffmpeg (audio
+> muxing not yet). Text/Audio/File output nodes are planned fast-follows.
 
 ## Exported-JSON → api_config contract
 

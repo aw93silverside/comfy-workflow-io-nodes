@@ -1,15 +1,15 @@
-"""Shared constants and widget helpers for the Swordfish node pack.
+"""Shared constants and widget helpers for the API node pack.
 
-Every Swordfish input node carries the same block of "API metadata" widgets.
+Every API input node carries the same block of "API metadata" widgets.
 Those widget values are what ComfyUI serializes into the exported API JSON, and
-they are exactly what Swordfish's WorkflowParser reads to auto-build an
-``api_config`` (no manual mapping). The runtime behaviour of the input nodes is
-deliberately trivial: they pass ``value`` straight through. Swordfish overrides
-``value`` per API call by injecting into this node's own ``value`` field.
+they are exactly what a workflow parser reads to auto-build an ``api_config``
+(no manual mapping). The runtime behaviour of the input nodes is deliberately
+trivial: they pass ``value`` straight through. The API runner overrides
+``value`` per call by injecting into this node's own ``value`` field.
 """
 
-CATEGORY_INPUT = "Swordfish/Inputs"
-CATEGORY_OUTPUT = "Swordfish/Outputs"
+CATEGORY_INPUT = "API Nodes/Inputs"
+CATEGORY_OUTPUT = "API Nodes/Outputs"
 
 
 class _AnyType(str):
@@ -30,7 +30,7 @@ class _AnyType(str):
 ANY_TYPE = _AnyType("*")
 
 # Bumped when the widget contract changes so the parser can branch on it.
-SWORDFISH_NODE_SCHEMA = "1"
+NODE_SCHEMA = "1"
 
 
 def meta_widgets(default_required: bool = True) -> dict:

@@ -5,10 +5,10 @@
     "_meta": { "title": "Blank Image (no model needed)" }
   },
   "2": {
-    "class_type": "SwordfishTextInput",
+    "class_type": "ApiTextInput",
     "inputs": {
       "param_name": "image_name",
-      "value": "swordfish_test",
+      "value": "api_test",
       "required": true,
       "description": "Text supplied by the caller; becomes the returned image's filename.",
       "example": "my_first_image",
@@ -19,7 +19,7 @@
     "_meta": { "title": "Text Input" }
   },
   "3": {
-    "class_type": "SwordfishImageOutput",
+    "class_type": "ApiImageOutput",
     "inputs": {
       "images": ["1", 0],
       "output_name": "result",

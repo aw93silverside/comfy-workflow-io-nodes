@@ -5,7 +5,7 @@
     "_meta": { "title": "Load Checkpoint (SD1.5)" }
   },
   "6": {
-    "class_type": "SwordfishTextInput",
+    "class_type": "ApiTextInput",
     "inputs": {
       "param_name": "prompt",
       "value": "a scenic mountain landscape at golden hour, highly detailed",
@@ -22,7 +22,7 @@
     "_meta": { "title": "Positive" }
   },
   "8": {
-    "class_type": "SwordfishTextInput",
+    "class_type": "ApiTextInput",
     "inputs": {
       "param_name": "negative_prompt",
       "value": "blurry, low quality, watermark",
@@ -39,7 +39,7 @@
     "_meta": { "title": "Negative" }
   },
   "10": {
-    "class_type": "SwordfishIntInput",
+    "class_type": "ApiIntInput",
     "inputs": {
       "param_name": "width", "value": 512, "min": 256, "max": 1024, "step": 64,
       "required": false, "description": "Image width.", "example": "512",
@@ -48,7 +48,7 @@
     "_meta": { "title": "Width" }
   },
   "11": {
-    "class_type": "SwordfishIntInput",
+    "class_type": "ApiIntInput",
     "inputs": {
       "param_name": "height", "value": 512, "min": 256, "max": 1024, "step": 64,
       "required": false, "description": "Image height.", "example": "512",
@@ -62,7 +62,7 @@
     "_meta": { "title": "Empty Latent" }
   },
   "12": {
-    "class_type": "SwordfishIntInput",
+    "class_type": "ApiIntInput",
     "inputs": {
       "param_name": "steps", "value": 20, "min": 1, "max": 60, "step": 1,
       "required": false, "description": "Total sampling steps.", "example": "20",
@@ -71,7 +71,7 @@
     "_meta": { "title": "Steps" }
   },
   "13": {
-    "class_type": "SwordfishFloatInput",
+    "class_type": "ApiFloatInput",
     "inputs": {
       "param_name": "cfg", "value": 7.0, "min": 1.0, "max": 20.0, "step": 0.1,
       "required": false, "description": "Classifier-free guidance scale.", "example": "7.0",
@@ -80,7 +80,7 @@
     "_meta": { "title": "CFG" }
   },
   "14": {
-    "class_type": "SwordfishEnumInput",
+    "class_type": "ApiEnumInput",
     "inputs": {
       "param_name": "sampler_name", "value": "euler",
       "options": "euler\ndpmpp_2m\ndpmpp_sde\nddim\nheun",
@@ -90,7 +90,7 @@
     "_meta": { "title": "Sampler" }
   },
   "15": {
-    "class_type": "SwordfishEnumInput",
+    "class_type": "ApiEnumInput",
     "inputs": {
       "param_name": "scheduler", "value": "normal",
       "options": "normal\nkarras\nexponential\nsgm_uniform",
@@ -100,7 +100,7 @@
     "_meta": { "title": "Scheduler" }
   },
   "16": {
-    "class_type": "SwordfishSeedInput",
+    "class_type": "ApiSeedInput",
     "inputs": {
       "param_name": "seed", "value": 42, "randomize_if_omitted": true,
       "required": false, "description": "Random seed. Omit for a fresh result each run.",
@@ -109,7 +109,7 @@
     "_meta": { "title": "Seed" }
   },
   "17": {
-    "class_type": "SwordfishBoolInput",
+    "class_type": "ApiBoolInput",
     "inputs": {
       "param_name": "return_preview", "value": true,
       "required": false,
@@ -143,7 +143,7 @@
     "_meta": { "title": "Decode Preview" }
   },
   "22": {
-    "class_type": "SwordfishImageOutput",
+    "class_type": "ApiImageOutput",
     "inputs": {
       "images": ["21", 0],
       "output_name": "preview",
@@ -178,7 +178,7 @@
     "_meta": { "title": "Decode Final" }
   },
   "25": {
-    "class_type": "SwordfishImageOutput",
+    "class_type": "ApiImageOutput",
     "inputs": {
       "images": ["24", 0],
       "output_name": "result",

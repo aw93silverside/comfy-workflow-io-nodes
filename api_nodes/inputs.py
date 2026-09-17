@@ -1,10 +1,10 @@
-"""Swordfish input nodes.
+"""API input nodes.
 
 Each node exposes a single ``value`` payload widget plus the shared metadata
-block. At runtime the node passes ``value`` through unchanged (Swordfish
-overrides ``value`` per API call). Because the injection target is always the
-Swordfish node's OWN ``value`` field, the mapping is stable and unambiguous —
-it never points into a third-party node the user might swap out.
+block. At runtime the node passes ``value`` through unchanged (the API runner
+overrides ``value`` per call). Because the injection target is always this
+node's OWN ``value`` field, the mapping is stable and unambiguous — it never
+points into a third-party node the user might swap out.
 
 These nodes are passthrough on purpose: they can sit anywhere in the graph,
 including mid-workflow to expose an intermediate value as an API knob.
@@ -15,12 +15,12 @@ import os
 from .common import ANY_TYPE, CATEGORY_INPUT, meta_widgets
 
 
-class _SwordfishInputBase:
+class _ApiInputBase:
     CATEGORY = CATEGORY_INPUT
     FUNCTION = "run"
 
 
-class SwordfishTextInput(_SwordfishInputBase):
+class ApiTextInput(_ApiInputBase):
     """String parameter (single or multi-line)."""
 
     @classmethod
@@ -40,7 +40,7 @@ class SwordfishTextInput(_SwordfishInputBase):
         return (value,)
 
 
-class SwordfishIntInput(_SwordfishInputBase):
+class ApiIntInput(_ApiInputBase):
     """Integer parameter with optional min/max/step."""
 
     @classmethod
@@ -65,7 +65,7 @@ class SwordfishIntInput(_SwordfishInputBase):
         return (int(value),)
 
 
-class SwordfishFloatInput(_SwordfishInputBase):
+class ApiFloatInput(_ApiInputBase):
     """Float parameter with optional min/max/step."""
 
     @classmethod
@@ -88,7 +88,7 @@ class SwordfishFloatInput(_SwordfishInputBase):
         return (float(value),)
 
 
-class SwordfishBoolInput(_SwordfishInputBase):
+class ApiBoolInput(_ApiInputBase):
     """Boolean parameter."""
 
     @classmethod
@@ -108,7 +108,7 @@ class SwordfishBoolInput(_SwordfishInputBase):
         return (bool(value),)
 
 
-class SwordfishEnumInput(_SwordfishInputBase):
+class ApiEnumInput(_ApiInputBase):
     """String parameter restricted to a fixed set of options.
 
     ``options`` is a newline-separated list; the parser turns it into the
@@ -139,8 +139,8 @@ class SwordfishEnumInput(_SwordfishInputBase):
         return (value,)
 
 
-class SwordfishSeedInput(_SwordfishInputBase):
-    """Integer seed. When omitted at call time Swordfish can auto-randomize it."""
+class ApiSeedInput(_ApiInputBase):
+    """Integer seed. When omitted at call time the runner can auto-randomize it."""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -163,10 +163,11 @@ class SwordfishSeedInput(_SwordfishInputBase):
         return (int(value),)
 
 
-class SwordfishImageInput(_SwordfishInputBase):
+class ApiImageInput(_ApiInputBase):
     """Image parameter. Behaves like LoadImage: reads a file from the ComfyUI
-    input directory named by ``value``. Swordfish writes the caller's uploaded
-    bytes to that directory and sets ``value`` to the filename per request.
+    input directory named by ``value``. The API runner writes the caller's
+    uploaded bytes to that directory and sets ``value`` to the filename per
+    request.
 
     Outputs (IMAGE, MASK) just like LoadImage so it drops into existing graphs.
     """
@@ -176,7 +177,7 @@ class SwordfishImageInput(_SwordfishInputBase):
         return {
             "required": {
                 "param_name": meta_widgets()["param_name"],
-                "value": ("STRING", {"default": "", "tooltip": "Filename in the input dir (set by Swordfish per call)."}),
+                "value": ("STRING", {"default": "", "tooltip": "Filename in the input dir (set by the API runner per call)."}),
                 "accepted_formats": ("STRING", {
                     "default": "png,jpg,jpeg,webp",
                     "tooltip": "Comma-separated accepted upload formats (documentation + validation hint).",
@@ -198,11 +199,11 @@ class SwordfishImageInput(_SwordfishInputBase):
 
         path = folder_paths.get_annotated_filepath(value) if value else ""
         if not path or not os.path.exists(path):
-            # Fall back to the input dir directly (Swordfish writes there).
+            # Fall back to the input dir directly (the runner writes there).
             path = os.path.join(folder_paths.get_input_directory(), value)
         if not os.path.exists(path):
             raise FileNotFoundError(
-                f"SwordfishImageInput '{param_name}': image '{value}' not found in the input directory."
+                f"ApiImageInput '{param_name}': image '{value}' not found in the input directory."
             )
 
         img = Image.open(path)
@@ -219,9 +220,9 @@ class SwordfishImageInput(_SwordfishInputBase):
         return (image, mask[None,])
 
 
-class SwordfishVideoInput(_SwordfishInputBase):
-    """Video parameter. Behaves like ComfyUI's core LoadVideo node: Swordfish
-    writes the caller's uploaded video to the input directory and sets
+class ApiVideoInput(_ApiInputBase):
+    """Video parameter. Behaves like ComfyUI's core LoadVideo node: the API
+    runner writes the caller's uploaded video to the input directory and sets
     ``value`` to the filename; this node just resolves that path and hands
     back a VIDEO handle (``comfy_api`` ``VideoInput``), so it drops into any
     graph that consumes VIDEO (GetVideoComponents, VideoSlice, SaveVideo, ...).
@@ -236,7 +237,7 @@ class SwordfishVideoInput(_SwordfishInputBase):
         return {
             "required": {
                 "param_name": meta_widgets()["param_name"],
-                "value": ("STRING", {"default": "", "tooltip": "Filename in the input dir (set by Swordfish per call)."}),
+                "value": ("STRING", {"default": "", "tooltip": "Filename in the input dir (set by the API runner per call)."}),
                 "accepted_formats": ("STRING", {
                     "default": "mp4,mov,webm",
                     "tooltip": "Comma-separated accepted upload formats (documentation + validation hint).",
@@ -256,11 +257,11 @@ class SwordfishVideoInput(_SwordfishInputBase):
 
         path = folder_paths.get_annotated_filepath(value) if value else ""
         if not path or not os.path.exists(path):
-            # Fall back to the input dir directly (Swordfish writes there).
+            # Fall back to the input dir directly (the runner writes there).
             path = os.path.join(folder_paths.get_input_directory(), value)
         if not os.path.exists(path):
             raise FileNotFoundError(
-                f"SwordfishVideoInput '{param_name}': video '{value}' not found in the input directory."
+                f"ApiVideoInput '{param_name}': video '{value}' not found in the input directory."
             )
 
         return (VideoFromFile(path),)

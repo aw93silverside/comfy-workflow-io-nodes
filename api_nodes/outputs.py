@@ -1,11 +1,11 @@
-"""Swordfish output nodes.
+"""API output nodes.
 
-Output nodes mark which results Swordfish returns to callers AND control the
+Output nodes mark which results the runner returns to callers AND control the
 client-facing filename. The filename is authored IN THE GRAPH: wire the
 ``filename`` input from anything (an intermediate caption, a seed, a
 concatenation node) for fully dynamic names, or fall back to the
 ``filename_template`` widget for static names. The node saves the file under
-the resolved name, and Swordfish returns exactly that name (the parser emits
+the resolved name, and the runner returns exactly that name (the parser emits
 these nodes as an allowlist, so no server-side renaming happens).
 
 All output nodes are OUTPUT_NODE and also pass their media straight through, so
@@ -44,7 +44,7 @@ def _output_path(directory: str, basename: str, ext: str) -> tuple[str, str]:
     return filename, os.path.join(directory, filename)
 
 
-class SwordfishImageOutput:
+class ApiImageOutput:
     """Return an image (or image batch) to the caller with a controlled filename."""
 
     CATEGORY = CATEGORY_OUTPUT
@@ -111,10 +111,10 @@ class SwordfishImageOutput:
 _VIDEO_CODECS = {"mp4": "libx264", "webm": "libvpx-vp9"}
 
 
-class SwordfishVideoOutput:
+class ApiVideoOutput:
     """Encode an IMAGE frame batch into a video and return it with a controlled
     filename. Takes the frames + frame_rate, encodes via imageio-ffmpeg into the
-    output directory (like VHS_VideoCombine), and registers it so Swordfish
+    output directory (like VHS_VideoCombine), and registers it so the runner
     returns it. Passes the frames through so it can sit mid-graph.
 
     NOTE: audio muxing is not supported yet (video track only). Odd frame

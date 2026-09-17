@@ -5,7 +5,7 @@
     "_meta": { "title": "Load Checkpoint" }
   },
   "2": {
-    "class_type": "SwordfishTextInput",
+    "class_type": "ApiTextInput",
     "inputs": {
       "param_name": "prompt",
       "value": "a photograph of a cat",
@@ -24,7 +24,7 @@
     "_meta": { "title": "CLIP Text Encode (Positive)" }
   },
   "4": {
-    "class_type": "SwordfishSeedInput",
+    "class_type": "ApiSeedInput",
     "inputs": {
       "param_name": "seed",
       "value": 42,
@@ -65,7 +65,7 @@
     "_meta": { "title": "VAE Decode" }
   },
   "8": {
-    "class_type": "SwordfishImageOutput",
+    "class_type": "ApiImageOutput",
     "inputs": {
       "images": ["7", 0],
       "output_name": "result",

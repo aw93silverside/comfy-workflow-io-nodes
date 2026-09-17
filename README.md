@@ -1,16 +1,16 @@
-# swordfish-comfy-nodes
+# comfy-api-nodes
 
-Custom ComfyUI nodes that let a workflow author declare its **Swordfish API
-contract inside the graph** — inputs and outputs — instead of hand-mapping them
-in the Swordfish deploy UI. When the workflow is exported as API JSON, these
-nodes carry all the contract metadata as widget values, and Swordfish's parser
-reads them to auto-build the entire `api_config`.
+Custom ComfyUI nodes that let a workflow author declare its **API contract
+inside the graph** — inputs and outputs — instead of hand-mapping them in a
+deploy UI. When the workflow is exported as API JSON, these nodes carry all
+the contract metadata as widget values, and a workflow parser reads them to
+auto-build the entire `api_config`.
 
 ## The idea
 
 - **Input nodes** are passthrough: they hold a `value` and output it, so you
-  wire their output into whatever downstream node needs it. Swordfish overrides
-  `value` per API call. The injection target is always the Swordfish node's own
+  wire their output into whatever downstream node needs it. The API runner
+  overrides `value` per call. The injection target is always this node's own
   `value` field — stable and unambiguous, so it never points into a third-party
   node the user might swap out.
 - **Output nodes** mark what gets returned to the caller and control the
@@ -19,26 +19,26 @@ reads them to auto-build the entire `api_config`.
 
 ## Nodes
 
-### Inputs (`Swordfish/Inputs`)
+### Inputs (`API Nodes/Inputs`)
 | Node | Output | Notes |
 |------|--------|-------|
-| Swordfish Text Input | STRING | single/multi-line |
-| Swordfish Int Input | INT | min/max/step |
-| Swordfish Float Input | FLOAT | min/max/step |
-| Swordfish Bool Input | BOOLEAN | |
-| Swordfish Enum Input | STRING | `options` (one per line) → API enum allowlist |
-| Swordfish Seed Input | INT | `randomize_if_omitted` |
-| Swordfish Image Input | IMAGE, MASK | LoadImage-style; reads the file Swordfish writes to the input dir |
-| Swordfish Video Input | VIDEO | LoadVideo-style; reads the file Swordfish writes to the input dir, decoding deferred to whatever consumes the VIDEO |
+| API Text Input | STRING | single/multi-line |
+| API Int Input | INT | min/max/step |
+| API Float Input | FLOAT | min/max/step |
+| API Bool Input | BOOLEAN | |
+| API Enum Input | STRING | `options` (one per line) → API enum allowlist |
+| API Seed Input | INT | `randomize_if_omitted` |
+| API Image Input | IMAGE, MASK | LoadImage-style; reads the file the runner writes to the input dir |
+| API Video Input | VIDEO | LoadVideo-style; reads the file the runner writes to the input dir, decoding deferred to whatever consumes the VIDEO |
 
 Every input node shares this metadata block: `param_name` (the API key),
 `required`, `description`, `example`, `advanced`, `group`, `order`.
 
-### Outputs (`Swordfish/Outputs`)
+### Outputs (`API Nodes/Outputs`)
 | Node | Takes | Notes |
 |------|-------|-------|
-| Swordfish Image Output | IMAGE | full saver (png/jpg/webp); passthrough IMAGE |
-| Swordfish Video Output | IMAGE frames | encodes via imageio-ffmpeg (mp4/webm); passthrough IMAGE (audio muxing not yet) |
+| API Image Output | IMAGE | full saver (png/jpg/webp); passthrough IMAGE |
+| API Video Output | IMAGE frames | encodes via imageio-ffmpeg (mp4/webm); passthrough IMAGE (audio muxing not yet) |
 
 Output nodes are `OUTPUT_NODE` and pass their media through, so they can sit
 mid-graph without dead-ending a branch.
@@ -50,16 +50,16 @@ mid-graph without dead-ending a branch.
 
 ## Exported-JSON → api_config contract
 
-Each Swordfish node serializes its widgets into the API JSON `inputs`. The
+Each API node serializes its widgets into the API JSON `inputs`. The
 parser maps:
 
 ```
-SwordfishTextInput node "2"  ->  api_config.mappings["prompt"] = {
+ApiTextInput node "2"  ->  api_config.mappings["prompt"] = {
     node_id: "2", field: "value", type: "string", required: true,
     default: {enabled: true, value: "a photograph of a cat"},
     tooltip: "<description>", advanced_setting: false }
 
-SwordfishImageOutput node "8"  ->  api_config.output_nodes = ["8", ...]
+ApiImageOutput node "8"  ->  api_config.output_nodes = ["8", ...]
 ```
 
 Because `output_nodes` is emitted as an allowlist (not a rename map), the runner
@@ -72,9 +72,9 @@ for the full exported shape the parser consumes.
 The node folder just needs to live in a ComfyUI `custom_nodes/` directory.
 
 - **Local / interactive dev:** clone into `ComfyUI/custom_nodes/` and restart.
-- **Swordfish v3 runner** (`modal/v3/comfyui.py`): add this repo's URL to the
+- **v3 runner** (`modal/v3/comfyui.py`): add this repo's URL to the
   `CUSTOM_NODES` list (cloned at image build).
-- **Swordfish v2 editor + runner** (workspace-based): the folder must be present
+- **v2 editor + runner** (workspace-based): the folder must be present
   in each workspace's `custom_nodes/`. Because these are platform nodes that must
   exist everywhere, prefer baking them into the base image + a startup symlink
   into the active workspace rather than per-workspace installs. **Deploy to both
@@ -87,5 +87,5 @@ No third-party pip dependencies (uses ComfyUI's existing torch/numpy/Pillow).
 
 ```bash
 # contract smoke test (no ComfyUI needed — heavy imports are lazy inside run())
-python3 -c "from swordfish_nodes import NODE_CLASS_MAPPINGS; print(len(NODE_CLASS_MAPPINGS))"
+python3 -c "from api_nodes import NODE_CLASS_MAPPINGS; print(len(NODE_CLASS_MAPPINGS))"
 ```

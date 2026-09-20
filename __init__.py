@@ -1,4 +1,4 @@
-"""Comfy API Nodes — ComfyUI custom-node entrypoint.
+"""Comfy Workflow IO Nodes — ComfyUI custom-node entrypoint.
 
 ComfyUI loads this package from ``custom_nodes/`` and reads NODE_CLASS_MAPPINGS
 and NODE_DISPLAY_NAME_MAPPINGS at boot.

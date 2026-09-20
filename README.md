@@ -1,4 +1,4 @@
-# comfy-api-nodes
+# comfy-workflow-io-nodes
 
 Custom ComfyUI nodes that let a workflow author declare its **API contract
 inside the graph** — inputs and outputs — instead of hand-mapping them in a
@@ -19,26 +19,26 @@ auto-build the entire `api_config`.
 
 ## Nodes
 
-### Inputs (`API Nodes/Inputs`)
+### Inputs (`Workflow IO/Inputs`)
 | Node | Output | Notes |
 |------|--------|-------|
-| API Text Input | STRING | single/multi-line |
-| API Int Input | INT | min/max/step |
-| API Float Input | FLOAT | min/max/step |
-| API Bool Input | BOOLEAN | |
-| API Enum Input | STRING | `options` (one per line) → API enum allowlist |
-| API Seed Input | INT | `randomize_if_omitted` |
-| API Image Input | IMAGE, MASK | LoadImage-style; reads the file the runner writes to the input dir |
-| API Video Input | VIDEO | LoadVideo-style; reads the file the runner writes to the input dir, decoding deferred to whatever consumes the VIDEO |
+| Workflow IO Text Input | STRING | single/multi-line |
+| Workflow IO Int Input | INT | min/max/step |
+| Workflow IO Float Input | FLOAT | min/max/step |
+| Workflow IO Bool Input | BOOLEAN | |
+| Workflow IO Enum Input | STRING | `options` (one per line) → API enum allowlist |
+| Workflow IO Seed Input | INT | `randomize_if_omitted` |
+| Workflow IO Image Input | IMAGE, MASK | LoadImage-style; reads the file the runner writes to the input dir |
+| Workflow IO Video Input | VIDEO | LoadVideo-style; reads the file the runner writes to the input dir, decoding deferred to whatever consumes the VIDEO |
 
 Every input node shares this metadata block: `param_name` (the API key),
 `required`, `description`, `example`, `advanced`, `group`, `order`.
 
-### Outputs (`API Nodes/Outputs`)
+### Outputs (`Workflow IO/Outputs`)
 | Node | Takes | Notes |
 |------|-------|-------|
-| API Image Output | IMAGE | full saver (png/jpg/webp); passthrough IMAGE |
-| API Video Output | IMAGE frames | encodes via imageio-ffmpeg (mp4/webm); passthrough IMAGE (audio muxing not yet) |
+| Workflow IO Image Output | IMAGE | full saver (png/jpg/webp); passthrough IMAGE |
+| Workflow IO Video Output | IMAGE frames | encodes via imageio-ffmpeg (mp4/webm); passthrough IMAGE (audio muxing not yet) |
 
 Output nodes are `OUTPUT_NODE` and pass their media through, so they can sit
 mid-graph without dead-ending a branch.
@@ -54,12 +54,12 @@ Each API node serializes its widgets into the API JSON `inputs`. The
 parser maps:
 
 ```
-ApiTextInput node "2"  ->  api_config.mappings["prompt"] = {
+WorkflowIOTextInput node "2"  ->  api_config.mappings["prompt"] = {
     node_id: "2", field: "value", type: "string", required: true,
     default: {enabled: true, value: "a photograph of a cat"},
     tooltip: "<description>", advanced_setting: false }
 
-ApiImageOutput node "8"  ->  api_config.output_nodes = ["8", ...]
+WorkflowIOImageOutput node "8"  ->  api_config.output_nodes = ["8", ...]
 ```
 
 Because `output_nodes` is emitted as an allowlist (not a rename map), the runner

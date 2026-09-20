@@ -15,12 +15,12 @@ import os
 from .common import ANY_TYPE, CATEGORY_INPUT, meta_widgets
 
 
-class _ApiInputBase:
+class _WorkflowIOInputBase:
     CATEGORY = CATEGORY_INPUT
     FUNCTION = "run"
 
 
-class ApiTextInput(_ApiInputBase):
+class WorkflowIOTextInput(_WorkflowIOInputBase):
     """String parameter (single or multi-line)."""
 
     @classmethod
@@ -40,7 +40,7 @@ class ApiTextInput(_ApiInputBase):
         return (value,)
 
 
-class ApiIntInput(_ApiInputBase):
+class WorkflowIOIntInput(_WorkflowIOInputBase):
     """Integer parameter with optional min/max/step."""
 
     @classmethod
@@ -65,7 +65,7 @@ class ApiIntInput(_ApiInputBase):
         return (int(value),)
 
 
-class ApiFloatInput(_ApiInputBase):
+class WorkflowIOFloatInput(_WorkflowIOInputBase):
     """Float parameter with optional min/max/step."""
 
     @classmethod
@@ -88,7 +88,7 @@ class ApiFloatInput(_ApiInputBase):
         return (float(value),)
 
 
-class ApiBoolInput(_ApiInputBase):
+class WorkflowIOBoolInput(_WorkflowIOInputBase):
     """Boolean parameter."""
 
     @classmethod
@@ -108,7 +108,7 @@ class ApiBoolInput(_ApiInputBase):
         return (bool(value),)
 
 
-class ApiEnumInput(_ApiInputBase):
+class WorkflowIOEnumInput(_WorkflowIOInputBase):
     """String parameter restricted to a fixed set of options.
 
     ``options`` is a newline-separated list; the parser turns it into the
@@ -139,7 +139,7 @@ class ApiEnumInput(_ApiInputBase):
         return (value,)
 
 
-class ApiSeedInput(_ApiInputBase):
+class WorkflowIOSeedInput(_WorkflowIOInputBase):
     """Integer seed. When omitted at call time the runner can auto-randomize it."""
 
     @classmethod
@@ -163,7 +163,7 @@ class ApiSeedInput(_ApiInputBase):
         return (int(value),)
 
 
-class ApiImageInput(_ApiInputBase):
+class WorkflowIOImageInput(_WorkflowIOInputBase):
     """Image parameter. Behaves like LoadImage: reads a file from the ComfyUI
     input directory named by ``value``. The API runner writes the caller's
     uploaded bytes to that directory and sets ``value`` to the filename per
@@ -203,7 +203,7 @@ class ApiImageInput(_ApiInputBase):
             path = os.path.join(folder_paths.get_input_directory(), value)
         if not os.path.exists(path):
             raise FileNotFoundError(
-                f"ApiImageInput '{param_name}': image '{value}' not found in the input directory."
+                f"WorkflowIOImageInput '{param_name}': image '{value}' not found in the input directory."
             )
 
         img = Image.open(path)
@@ -220,7 +220,7 @@ class ApiImageInput(_ApiInputBase):
         return (image, mask[None,])
 
 
-class ApiVideoInput(_ApiInputBase):
+class WorkflowIOVideoInput(_WorkflowIOInputBase):
     """Video parameter. Behaves like ComfyUI's core LoadVideo node: the API
     runner writes the caller's uploaded video to the input directory and sets
     ``value`` to the filename; this node just resolves that path and hands
@@ -261,7 +261,7 @@ class ApiVideoInput(_ApiInputBase):
             path = os.path.join(folder_paths.get_input_directory(), value)
         if not os.path.exists(path):
             raise FileNotFoundError(
-                f"ApiVideoInput '{param_name}': video '{value}' not found in the input directory."
+                f"WorkflowIOVideoInput '{param_name}': video '{value}' not found in the input directory."
             )
 
         return (VideoFromFile(path),)

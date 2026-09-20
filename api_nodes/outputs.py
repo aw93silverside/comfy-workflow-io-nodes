@@ -44,7 +44,7 @@ def _output_path(directory: str, basename: str, ext: str) -> tuple[str, str]:
     return filename, os.path.join(directory, filename)
 
 
-class ApiImageOutput:
+class WorkflowIOImageOutput:
     """Return an image (or image batch) to the caller with a controlled filename."""
 
     CATEGORY = CATEGORY_OUTPUT
@@ -111,7 +111,7 @@ class ApiImageOutput:
 _VIDEO_CODECS = {"mp4": "libx264", "webm": "libvpx-vp9"}
 
 
-class ApiVideoOutput:
+class WorkflowIOVideoOutput:
     """Encode an IMAGE frame batch into a video and return it with a controlled
     filename. Takes the frames + frame_rate, encodes via imageio-ffmpeg into the
     output directory (like VHS_VideoCombine), and registers it so the runner

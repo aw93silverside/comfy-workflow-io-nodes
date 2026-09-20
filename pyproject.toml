@@ -1,5 +1,5 @@
 [project]
-name = "comfy-api-nodes"
+name = "comfy-workflow-io-nodes"
 version = "0.1.0"
 description = "ComfyUI custom nodes that declare a workflow's API contract in the graph"
 requires-python = ">=3.10"
@@ -7,4 +7,4 @@ dependencies = []
 
 [tool.comfy]
 PublisherId = "silverside-ai"
-DisplayName = "API Nodes"
+DisplayName = "Workflow IO Nodes"

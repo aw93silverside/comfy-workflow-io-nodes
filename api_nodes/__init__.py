@@ -1,46 +1,46 @@
-"""API node pack — aggregates the class + display-name mappings."""
+"""Workflow IO node pack — aggregates the class + display-name mappings."""
 
 from .inputs import (
-    ApiTextInput,
-    ApiIntInput,
-    ApiFloatInput,
-    ApiBoolInput,
-    ApiEnumInput,
-    ApiSeedInput,
-    ApiImageInput,
-    ApiVideoInput,
+    WorkflowIOTextInput,
+    WorkflowIOIntInput,
+    WorkflowIOFloatInput,
+    WorkflowIOBoolInput,
+    WorkflowIOEnumInput,
+    WorkflowIOSeedInput,
+    WorkflowIOImageInput,
+    WorkflowIOVideoInput,
 )
 from .outputs import (
-    ApiImageOutput,
-    ApiVideoOutput,
+    WorkflowIOImageOutput,
+    WorkflowIOVideoOutput,
 )
 
 NODE_CLASS_MAPPINGS = {
     # Inputs
-    "ApiTextInput": ApiTextInput,
-    "ApiIntInput": ApiIntInput,
-    "ApiFloatInput": ApiFloatInput,
-    "ApiBoolInput": ApiBoolInput,
-    "ApiEnumInput": ApiEnumInput,
-    "ApiSeedInput": ApiSeedInput,
-    "ApiImageInput": ApiImageInput,
-    "ApiVideoInput": ApiVideoInput,
+    "WorkflowIOTextInput": WorkflowIOTextInput,
+    "WorkflowIOIntInput": WorkflowIOIntInput,
+    "WorkflowIOFloatInput": WorkflowIOFloatInput,
+    "WorkflowIOBoolInput": WorkflowIOBoolInput,
+    "WorkflowIOEnumInput": WorkflowIOEnumInput,
+    "WorkflowIOSeedInput": WorkflowIOSeedInput,
+    "WorkflowIOImageInput": WorkflowIOImageInput,
+    "WorkflowIOVideoInput": WorkflowIOVideoInput,
     # Outputs
-    "ApiImageOutput": ApiImageOutput,
-    "ApiVideoOutput": ApiVideoOutput,
+    "WorkflowIOImageOutput": WorkflowIOImageOutput,
+    "WorkflowIOVideoOutput": WorkflowIOVideoOutput,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "ApiTextInput": "API Text Input",
-    "ApiIntInput": "API Int Input",
-    "ApiFloatInput": "API Float Input",
-    "ApiBoolInput": "API Bool Input",
-    "ApiEnumInput": "API Enum Input",
-    "ApiSeedInput": "API Seed Input",
-    "ApiImageInput": "API Image Input",
-    "ApiVideoInput": "API Video Input",
-    "ApiImageOutput": "API Image Output",
-    "ApiVideoOutput": "API Video Output",
+    "WorkflowIOTextInput": "Workflow IO Text Input",
+    "WorkflowIOIntInput": "Workflow IO Int Input",
+    "WorkflowIOFloatInput": "Workflow IO Float Input",
+    "WorkflowIOBoolInput": "Workflow IO Bool Input",
+    "WorkflowIOEnumInput": "Workflow IO Enum Input",
+    "WorkflowIOSeedInput": "Workflow IO Seed Input",
+    "WorkflowIOImageInput": "Workflow IO Image Input",
+    "WorkflowIOVideoInput": "Workflow IO Video Input",
+    "WorkflowIOImageOutput": "Workflow IO Image Output",
+    "WorkflowIOVideoOutput": "Workflow IO Video Output",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

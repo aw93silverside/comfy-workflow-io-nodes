@@ -5,7 +5,7 @@
     "_meta": { "title": "Blank Image (no model needed)" }
   },
   "2": {
-    "class_type": "ApiTextInput",
+    "class_type": "WorkflowIOTextInput",
     "inputs": {
       "param_name": "image_name",
       "value": "api_test",
@@ -19,7 +19,7 @@
     "_meta": { "title": "Text Input" }
   },
   "3": {
-    "class_type": "ApiImageOutput",
+    "class_type": "WorkflowIOImageOutput",
     "inputs": {
       "images": ["1", 0],
       "output_name": "result",

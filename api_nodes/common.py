@@ -8,8 +8,8 @@ trivial: they pass ``value`` straight through. The API runner overrides
 ``value`` per call by injecting into this node's own ``value`` field.
 """
 
-CATEGORY_INPUT = "API Nodes/Inputs"
-CATEGORY_OUTPUT = "API Nodes/Outputs"
+CATEGORY_INPUT = "Workflow IO/Inputs"
+CATEGORY_OUTPUT = "Workflow IO/Outputs"
 
 
 class _AnyType(str):

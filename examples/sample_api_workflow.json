@@ -5,7 +5,7 @@
     "_meta": { "title": "Load Checkpoint" }
   },
   "2": {
-    "class_type": "ApiTextInput",
+    "class_type": "WorkflowIOTextInput",
     "inputs": {
       "param_name": "prompt",
       "value": "a photograph of a cat",
@@ -24,7 +24,7 @@
     "_meta": { "title": "CLIP Text Encode (Positive)" }
   },
   "4": {
-    "class_type": "ApiSeedInput",
+    "class_type": "WorkflowIOSeedInput",
     "inputs": {
       "param_name": "seed",
       "value": 42,
@@ -65,7 +65,7 @@
     "_meta": { "title": "VAE Decode" }
   },
   "8": {
-    "class_type": "ApiImageOutput",
+    "class_type": "WorkflowIOImageOutput",
     "inputs": {
       "images": ["7", 0],
       "output_name": "result",

@@ -82,11 +82,10 @@
     "inputs": {
       "param_name": "input_video",
       "value": "",
-      "frame_load_cap": 24,
       "accepted_formats": "mp4,mov,webm",
       "max_size_mb": 100,
       "required": true,
-      "description": "Source video; decoded to frames and re-encoded.",
+      "description": "Source video; passed through to the output.",
       "example": "", "advanced": false, "group": "Video", "order": 1
     },
     "_meta": { "title": "Input Video" }
@@ -94,14 +93,11 @@
   "11": {
     "class_type": "WorkflowIOVideoOutput",
     "inputs": {
-      "frames": ["10", 0],
+      "video": ["10", 0],
       "output_name": "video_result",
       "filename_template": "roundtrip",
-      "format": "mp4",
-      "frame_rate": 24.0,
-      "quality": 8,
-      "include": true,
-      "fps": ["10", 1]
+      "format": "auto",
+      "include": true
     },
     "_meta": { "title": "Video Output" }
   }

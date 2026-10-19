@@ -108,71 +108,59 @@ class WorkflowIOImageOutput:
         return {"ui": {"images": results}, "result": (images,)}
 
 
-_VIDEO_CODECS = {"mp4": "libx264", "webm": "libvpx-vp9"}
-
-
 class WorkflowIOVideoOutput:
-    """Encode an IMAGE frame batch into a video and return it with a controlled
-    filename. Takes the frames + frame_rate, encodes via imageio-ffmpeg into the
-    output directory (like VHS_VideoCombine), and registers it so the runner
-    returns it. Passes the frames through so it can sit mid-graph.
-
-    NOTE: audio muxing is not supported yet (video track only). Odd frame
-    dimensions are padded to even by the encoder for codec compatibility.
+    """Save a VIDEO (from WorkflowIOVideoInput, CreateVideo, LoadVideo, VHS
+    nodes, or anything else that produces the native VIDEO type) with a
+    controlled filename and return it. Delegates to ``comfy_api``'s
+    ``VideoInput.save_to`` (same mechanism as ComfyUI core's SaveVideo), which
+    carries the audio track through — this is why the node takes a VIDEO
+    rather than a bare IMAGE frame batch: frames alone have no audio to
+    preserve. Passes the video through so it can sit mid-graph.
     """
 
     CATEGORY = CATEGORY_OUTPUT
     FUNCTION = "run"
     OUTPUT_NODE = True
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("frames",)
+    RETURN_TYPES = ("VIDEO",)
+    RETURN_NAMES = ("video",)
 
     @classmethod
     def INPUT_TYPES(cls):
+        from comfy_api.util import VideoContainer
+
         return {
             "required": {
-                "frames": ("IMAGE",),
+                "video": ("VIDEO",),
                 "output_name": ("STRING", {"default": "video"}),
                 "filename_template": ("STRING", {"default": "", "tooltip": "Static filename (no extension)."}),
-                "format": (["mp4", "webm"], {"default": "mp4"}),
-                "frame_rate": ("FLOAT", {"default": 24.0, "min": 1.0, "max": 240.0, "step": 1.0}),
-                "quality": ("INT", {"default": 8, "min": 1, "max": 10,
-                                    "tooltip": "Encoder quality (higher = better/larger)."}),
+                "format": (VideoContainer.as_input(), {
+                    "default": "auto",
+                    "tooltip": "'auto' remuxes the video's original container/codec (fast, lossless, audio intact). "
+                                "Other options force re-encoding to that container.",
+                }),
                 "include": ("BOOLEAN", {"default": True}),
             },
             "optional": {
                 "filename": ("STRING", {"forceInput": True, "tooltip": "Dynamic filename (no extension). Takes priority."}),
-                "fps": ("FLOAT", {"forceInput": True, "tooltip": "Optional wired fps; overrides frame_rate widget."}),
             },
         }
 
-    def run(self, frames, output_name, filename_template, format, frame_rate, quality, include, filename="", fps=None):
+    def run(self, video, output_name, filename_template, format, include, filename=""):
         if not include:
-            return {"ui": {"videos": []}, "result": (frames,)}
+            return {"ui": {"videos": []}, "result": (video,)}
 
-        import numpy as np
-        import imageio.v2 as imageio
+        from comfy_api.util import VideoContainer
         import folder_paths
 
         out_dir = folder_paths.get_output_directory()
-        ext = format.lower()
-        codec = _VIDEO_CODECS.get(ext, "libx264")
-        rate = float(fps) if fps else float(frame_rate)
+        container = VideoContainer(format)
+        ext = VideoContainer.get_extension(container) or "mp4"
         basename = _resolve_basename(filename, filename_template, output_name)
         fname, fpath = _output_path(out_dir, basename, ext)
 
-        writer = imageio.get_writer(
-            fpath, fps=rate, codec=codec, quality=quality, macro_block_size=2,
-        )
-        try:
-            batch = frames.shape[0] if hasattr(frames, "shape") else len(frames)
-            for i in range(batch):
-                arr = 255.0 * frames[i].cpu().numpy()
-                writer.append_data(np.clip(arr, 0, 255).astype(np.uint8))
-        finally:
-            writer.close()
+        video.save_to(fpath, format=container)
 
         return {
             "ui": {"videos": [{"filename": fname, "subfolder": "", "type": "output"}]},
-            "result": (frames,),
+            "result": (video,),
         }

@@ -38,15 +38,14 @@ Every input node shares this metadata block: `param_name` (the API key),
 | Node | Takes | Notes |
 |------|-------|-------|
 | Workflow IO Image Output | IMAGE | full saver (png/jpg/webp); passthrough IMAGE |
-| Workflow IO Video Output | IMAGE frames | encodes via imageio-ffmpeg (mp4/webm); passthrough IMAGE (audio muxing not yet) |
+| Workflow IO Video Output | VIDEO | saves via `comfy_api`'s `VideoInput.save_to` (SaveVideo-style, audio preserved); passthrough VIDEO |
 
 Output nodes are `OUTPUT_NODE` and pass their media through, so they can sit
 mid-graph without dead-ending a branch.
 
-> **MVP scope note:** Image and video input/output are fully implemented.
-> Video input returns a native VIDEO handle (LoadVideo-style, audio preserved);
-> video output still takes IMAGE frames and encodes via imageio-ffmpeg (audio
-> muxing not yet). Text/Audio/File output nodes are planned fast-follows.
+> **MVP scope note:** Image and video input/output are fully implemented, both
+> preserving audio end-to-end via the native VIDEO type. Text/Audio/File
+> output nodes are planned fast-follows.
 
 ## Exported-JSON → api_config contract
 

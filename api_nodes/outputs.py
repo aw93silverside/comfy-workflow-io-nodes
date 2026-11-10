@@ -218,13 +218,13 @@ class WorkflowIOVideoOutput:
         basename = _resolve_basename(filename, filename_template, output_name)
         fname, fpath = _output_path(out_dir, basename, ext)
 
-        if codec and codec != "auto":
-            try:
-                from comfy_api.util import VideoCodec
-            except ImportError as e:
-                raise RuntimeError(
-                    f"Video codec '{codec}' needs a newer ComfyUI (comfy_api.util.VideoCodec, 0.44+)."
-                ) from e
+        try:
+            from comfy_api.util import VideoCodec
+        except ImportError:  # ComfyUI before 0.44: the container picks the codec (H.264 for MP4, AV1 for WebM)
+            VideoCodec = None
+            if codec == "prores":
+                raise RuntimeError("ProRes output needs a newer ComfyUI (comfy_api.util.VideoCodec, 0.44+).")
+        if VideoCodec is not None and codec and codec != "auto":
             video.save_to(fpath, format=container, codec=VideoCodec(codec))
         else:
             video.save_to(fpath, format=container)

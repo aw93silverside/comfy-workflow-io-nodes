@@ -38,7 +38,7 @@ Every input node shares this metadata block: `param_name` (the API key),
 | Node | Takes | Notes |
 |------|-------|-------|
 | Workflow IO Image Output | IMAGE | full saver (png/jpg/webp); passthrough IMAGE |
-| Workflow IO Video Output | VIDEO | saves via `comfy_api`'s `VideoInput.save_to` (SaveVideo-style, audio preserved); passthrough VIDEO |
+| Workflow IO Video Output | VIDEO | saves via `comfy_api`'s `VideoInput.save_to` (SaveVideo-style, audio preserved); passthrough VIDEO; `codec` (auto/h264/av1/prores, ComfyUI 0.44+) and a wirable `video_format` string (MP4, ProRes, WebM, MKV, auto) that overrides format + codec — ProRes is written as MOV (422 HQ, or 4444 for 4:4:4/alpha sources) |
 
 Output nodes are `OUTPUT_NODE` and pass their media through, so they can sit
 mid-graph without dead-ending a branch.

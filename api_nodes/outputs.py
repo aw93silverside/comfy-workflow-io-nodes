@@ -108,6 +108,45 @@ class WorkflowIOImageOutput:
         return {"ui": {"images": results}, "result": (images,)}
 
 
+# Friendly names a graph can wire into ``video_format`` (e.g. from a Workflow IO
+# Enum Input with options "MP4, ProRes"), mapped to (container, codec).
+_VIDEO_FORMAT_ALIASES = {
+    "auto": ("auto", "auto"),
+    "mp4": ("mp4", "h264"),
+    "h264": ("mp4", "h264"),
+    "h.264": ("mp4", "h264"),
+    "prores": ("mov", "prores"),
+    "mov": ("mov", "prores"),
+    "webm": ("webm", "av1"),
+    "av1": ("webm", "av1"),
+    "mkv": ("mkv", "auto"),
+}
+
+
+def _video_codecs() -> list[str]:
+    """Codec choices the running ComfyUI supports (VideoCodec arrived after 0.42)."""
+    try:
+        from comfy_api.util import VideoCodec
+        return VideoCodec.as_input()
+    except ImportError:
+        return ["auto"]
+
+
+def _resolve_video_format(video_format: str, format: str, codec: str) -> tuple[str, str]:
+    """A wired ``video_format`` (MP4, ProRes, ...) wins over the format/codec widgets."""
+    key = (video_format or "").strip().lower()
+    if key:
+        key = re.sub(r"\s+", "", key)
+        if key.startswith("prores"):
+            key = "prores"
+        if key not in _VIDEO_FORMAT_ALIASES:
+            raise ValueError(
+                f"Unknown video_format '{video_format}'. Use one of: MP4, ProRes, WebM, MKV, auto."
+            )
+        return _VIDEO_FORMAT_ALIASES[key]
+    return format, codec
+
+
 class WorkflowIOVideoOutput:
     """Save a VIDEO (from WorkflowIOVideoInput, CreateVideo, LoadVideo, VHS
     nodes, or anything else that produces the native VIDEO type) with a
@@ -116,6 +155,13 @@ class WorkflowIOVideoOutput:
     carries the audio track through — this is why the node takes a VIDEO
     rather than a bare IMAGE frame batch: frames alone have no audio to
     preserve. Passes the video through so it can sit mid-graph.
+
+    Format and codec: ``format`` picks the container and the optional ``codec``
+    widget the encoder (``prores`` writes ProRes in a MOV: 422 HQ for 4:2:0/4:2:2
+    sources, 4444 for 4:4:4 or alpha). Wire a string into ``video_format``
+    ("MP4", "ProRes", ...) to let the caller choose; it overrides both widgets.
+    Codec choices need ComfyUI with ``comfy_api.util.VideoCodec`` (0.44+); on
+    older cores only ``auto`` is offered and ProRes raises a clear error.
     """
 
     CATEGORY = CATEGORY_OUTPUT
@@ -142,15 +188,29 @@ class WorkflowIOVideoOutput:
             },
             "optional": {
                 "filename": ("STRING", {"forceInput": True, "tooltip": "Dynamic filename (no extension). Takes priority."}),
+                "codec": (_video_codecs(), {
+                    "default": "auto",
+                    "tooltip": "Encoder. 'auto' keeps the container's default (H.264 for MP4, AV1 for WebM). "
+                                "'prores' needs the MOV or MKV container (or format 'auto', which then picks MOV).",
+                }),
+                "video_format": ("STRING", {
+                    "forceInput": True,
+                    "tooltip": "Dynamic format, e.g. from an Enum Input: MP4, ProRes, WebM, MKV or auto. "
+                                "Takes priority over format and codec.",
+                }),
             },
         }
 
-    def run(self, video, output_name, filename_template, format, include, filename=""):
+    def run(self, video, output_name, filename_template, format, include, filename="", codec="auto", video_format=""):
         if not include:
             return {"ui": {"videos": []}, "result": (video,)}
 
         from comfy_api.util import VideoContainer
         import folder_paths
+
+        format, codec = _resolve_video_format(video_format, format, codec)
+        if codec == "prores" and format == "auto":
+            format = "mov"
 
         out_dir = folder_paths.get_output_directory()
         container = VideoContainer(format)
@@ -158,7 +218,16 @@ class WorkflowIOVideoOutput:
         basename = _resolve_basename(filename, filename_template, output_name)
         fname, fpath = _output_path(out_dir, basename, ext)
 
-        video.save_to(fpath, format=container)
+        if codec and codec != "auto":
+            try:
+                from comfy_api.util import VideoCodec
+            except ImportError as e:
+                raise RuntimeError(
+                    f"Video codec '{codec}' needs a newer ComfyUI (comfy_api.util.VideoCodec, 0.44+)."
+                ) from e
+            video.save_to(fpath, format=container, codec=VideoCodec(codec))
+        else:
+            video.save_to(fpath, format=container)
 
         return {
             "ui": {"videos": [{"filename": fname, "subfolder": "", "type": "output"}]},

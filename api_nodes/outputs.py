@@ -233,3 +233,49 @@ class WorkflowIOVideoOutput:
             "ui": {"videos": [{"filename": fname, "subfolder": "", "type": "output"}]},
             "result": (video,),
         }
+
+
+class WorkflowIO3DOutput:
+    """Save a 3D file (FILE_3D: GLB, glTF, FBX, OBJ, STL — e.g. from a mesh
+    bake or Create 3D File) with a controlled filename and return it. Writes it
+    in the file's own format via ``File3D.save_to``, the same call ComfyUI
+    core's Save 3D uses, and reports it under the ``3d`` UI key like core does.
+    Passes the file through so it can sit mid-graph.
+    """
+
+    CATEGORY = CATEGORY_OUTPUT
+    FUNCTION = "run"
+    OUTPUT_NODE = True
+    RETURN_TYPES = ("FILE_3D",)
+    RETURN_NAMES = ("model_3d",)
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model_3d": ("FILE_3D,FILE_3D_GLB,FILE_3D_GLTF,FILE_3D_FBX,FILE_3D_OBJ,FILE_3D_STL",),
+                "output_name": ("STRING", {"default": "model"}),
+                "filename_template": ("STRING", {"default": "", "tooltip": "Static filename (no extension)."}),
+                "include": ("BOOLEAN", {"default": True}),
+            },
+            "optional": {
+                "filename": ("STRING", {"forceInput": True, "tooltip": "Dynamic filename (no extension). Takes priority."}),
+            },
+        }
+
+    def run(self, model_3d, output_name, filename_template, include, filename=""):
+        if not include:
+            return {"ui": {"3d": []}, "result": (model_3d,)}
+
+        import folder_paths
+
+        out_dir = folder_paths.get_output_directory()
+        basename = _resolve_basename(filename, filename_template, output_name)
+        fname, fpath = _output_path(out_dir, basename, model_3d.format or "glb")
+
+        model_3d.save_to(fpath)
+
+        return {
+            "ui": {"3d": [{"filename": fname, "subfolder": "", "type": "output"}]},
+            "result": (model_3d,),
+        }

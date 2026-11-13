@@ -32,6 +32,29 @@ ANY_TYPE = _AnyType("*")
 # Bumped when the widget contract changes so the parser can branch on it.
 NODE_SCHEMA = "1"
 
+# What a value means, so the app can show it appropriately (aspect_ratio: ratios
+# like 16:9, drawn as shapes). One vocabulary for every node that declares it.
+# Only add to it: ComfyUI rejects a saved value that is no longer in the list.
+VALUE_TYPES = ("none", "aspect_ratio")
+
+
+def value_type_widget() -> dict:
+    """The optional ``value_type`` widget, for a node's ``optional`` section.
+
+    Optional so workflows saved before a node had it keep passing ComfyUI's
+    validation; a missing value means ``none``.
+    """
+    return {
+        "value_type": (
+            list(VALUE_TYPES),
+            {
+                "default": "none",
+                "tooltip": "What each value means, so the app can show it appropriately "
+                "(aspect_ratio: ratios like 16:9, drawn as shapes).",
+            },
+        ),
+    }
+
 
 def meta_widgets(default_required: bool = True) -> dict:
     """The metadata widgets shared by every input node.

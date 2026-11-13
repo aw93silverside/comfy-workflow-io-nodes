@@ -2,7 +2,7 @@
 
 Read [docs/comfy-json-ui-contract.md](docs/comfy-json-ui-contract.md) first for the Comfy JSON ↔ Brand Brain UI contract.
 
-For **branch, PR, and change discipline**, follow the project skill:
+Before changing **`VALUE_TYPES`** or **`value_type`**, follow:
 
 - [.cursor/skills/push-changes/SKILL.md](.cursor/skills/push-changes/SKILL.md)
 

@@ -26,7 +26,7 @@ auto-build the entire `api_config`.
 | Workflow IO Int Input | INT | min/max/step |
 | Workflow IO Float Input | FLOAT | min/max/step |
 | Workflow IO Bool Input | BOOLEAN | |
-| Workflow IO Enum Input | STRING | `options` (one per line) → API enum allowlist |
+| Workflow IO Enum Input | STRING | `options` (one per line) → API enum allowlist; optional `value_type` (`none`, `aspect_ratio`) says what each option means |
 | Workflow IO Seed Input | INT | `randomize_if_omitted` |
 | Workflow IO Image Input | IMAGE, MASK | LoadImage-style; reads the file the runner writes to the input dir |
 | Workflow IO Video Input | VIDEO | LoadVideo-style; reads the file the runner writes to the input dir, decoding deferred to whatever consumes the VIDEO |

@@ -113,6 +113,11 @@ class WorkflowIOEnumInput(_WorkflowIOInputBase):
 
     ``options`` is a newline-separated list; the parser turns it into the
     api_config ``options`` allowlist. ``value`` holds the current/default choice.
+
+    ``value_type`` says what each option means (e.g. ``aspect_ratio``), so the
+    app can show the options appropriately. It is optional so workflows saved
+    before it existed keep validating; a missing value means ``none``. Only add
+    to its list: ComfyUI rejects a saved value that is no longer in it.
     """
 
     @classmethod
@@ -127,7 +132,14 @@ class WorkflowIOEnumInput(_WorkflowIOInputBase):
                     "tooltip": "Allowed values, one per line. Becomes the API enum allowlist.",
                 }),
                 **{k: v for k, v in meta_widgets().items() if k != "param_name"},
-            }
+            },
+            "optional": {
+                "value_type": (["none", "aspect_ratio"], {
+                    "default": "none",
+                    "tooltip": "What each option means, so the app can show it appropriately "
+                               "(aspect_ratio: options are ratios like 16:9, drawn as shapes).",
+                }),
+            },
         }
 
     # Wildcard so the choice can drive COMBO inputs (sampler_name, scheduler,

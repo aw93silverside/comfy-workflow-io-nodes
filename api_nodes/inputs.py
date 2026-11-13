@@ -12,7 +12,7 @@ including mid-workflow to expose an intermediate value as an API knob.
 
 import os
 
-from .common import ANY_TYPE, CATEGORY_INPUT, meta_widgets
+from .common import ANY_TYPE, CATEGORY_INPUT, meta_widgets, value_type_widget
 
 
 class _WorkflowIOInputBase:
@@ -111,8 +111,10 @@ class WorkflowIOBoolInput(_WorkflowIOInputBase):
 class WorkflowIOEnumInput(_WorkflowIOInputBase):
     """String parameter restricted to a fixed set of options.
 
-    ``options`` is a newline-separated list; the parser turns it into the
-    api_config ``options`` allowlist. ``value`` holds the current/default choice.
+    ``options`` lists the allowed values, one per line or comma-separated; the
+    parser turns it into the api_config ``options`` allowlist. ``value`` holds
+    the current/default choice. The optional ``value_type`` says what each option
+    means (see ``common.VALUE_TYPES``).
     """
 
     @classmethod
@@ -124,15 +126,55 @@ class WorkflowIOEnumInput(_WorkflowIOInputBase):
                 "options": ("STRING", {
                     "default": "",
                     "multiline": True,
-                    "tooltip": "Allowed values, one per line. Becomes the API enum allowlist.",
+                    "tooltip": "Allowed values, one per line or comma-separated. Becomes the API enum allowlist.",
                 }),
                 **{k: v for k, v in meta_widgets().items() if k != "param_name"},
-            }
+            },
+            "optional": value_type_widget(),
         }
 
     # Wildcard so the choice can drive COMBO inputs (sampler_name, scheduler,
     # ckpt_name, lora_name, ...) as well as plain STRING inputs.
     RETURN_TYPES = (ANY_TYPE,)
+    RETURN_NAMES = ("value",)
+
+    def run(self, param_name, value, options="", **_meta):
+        return (value,)
+
+
+class WorkflowIOMultiEnumInput(_WorkflowIOInputBase):
+    """Several of a fixed set of options at once.
+
+    Like the Enum input, but ``value`` holds the picks joined by ``separator``
+    (e.g. ``1:1,16:9``), which is how the downstream node splits what it
+    receives. Its own class because the output must be a plain STRING: several
+    values can never feed a COMBO input, so it can't share the Enum's wildcard.
+    ``separator`` and ``value_type`` are optional, like on the Enum input.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "param_name": meta_widgets()["param_name"],
+                "value": ("STRING", {"default": "", "tooltip": "Current/default picks, joined by the separator."}),
+                "options": ("STRING", {
+                    "default": "",
+                    "multiline": True,
+                    "tooltip": "Allowed values, one per line or comma-separated. Becomes the API enum allowlist.",
+                }),
+                **{k: v for k, v in meta_widgets().items() if k != "param_name"},
+            },
+            "optional": {
+                "separator": ("STRING", {
+                    "default": ",",
+                    "tooltip": "How the downstream node splits the value it receives.",
+                }),
+                **value_type_widget(),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("value",)
 
     def run(self, param_name, value, options="", **_meta):

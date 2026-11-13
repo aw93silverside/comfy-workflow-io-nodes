@@ -86,6 +86,8 @@ No third-party pip dependencies (uses ComfyUI's existing torch/numpy/Pillow).
 
 ## Dev
 
+Contributors: [docs/comfy-json-ui-contract.md](docs/comfy-json-ui-contract.md) and [AGENTS.md](AGENTS.md).
+
 ```bash
 # contract smoke test (no ComfyUI needed — heavy imports are lazy inside run())
 python3 -c "from api_nodes import NODE_CLASS_MAPPINGS; print(len(NODE_CLASS_MAPPINGS))"

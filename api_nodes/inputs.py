@@ -146,7 +146,7 @@ class WorkflowIOMultiEnumInput(_WorkflowIOInputBase):
     """Several of a fixed set of options at once.
 
     Like the Enum input, but ``value`` holds the picks joined by ``separator``
-    (e.g. ``1:1,16:9``), which is how the downstream node splits what it
+    (e.g. ``1:1, 16:9``), which is how the downstream node splits what it
     receives. Its own class because the output must be a plain STRING: several
     values can never feed a COMBO input, so it can't share the Enum's wildcard.
     ``separator`` and ``value_type`` are optional, like on the Enum input.
@@ -167,8 +167,8 @@ class WorkflowIOMultiEnumInput(_WorkflowIOInputBase):
             },
             "optional": {
                 "separator": ("STRING", {
-                    "default": ",",
-                    "tooltip": "How the downstream node splits the value it receives.",
+                    "default": ", ",
+                    "tooltip": "What joins the picks: how the downstream node splits the value it receives (default comma + space).",
                 }),
                 **value_type_widget(),
             },

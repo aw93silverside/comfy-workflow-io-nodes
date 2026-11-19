@@ -1,5 +1,8 @@
 # comfy-workflow-io-nodes
 
+> [!IMPORTANT]
+> This repo has been superseded by [Silverside-AI/comfy-workflow-io-nodes](https://github.com/Silverside-AI/comfy-workflow-io-nodes). Please use that one instead.
+
 Custom ComfyUI nodes that let a workflow author declare its **API contract
 inside the graph** — inputs and outputs — instead of hand-mapping them in a
 deploy UI. When the workflow is exported as API JSON, these nodes carry all
